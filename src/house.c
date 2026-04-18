@@ -115,8 +115,8 @@ void find_house_coordinates(House* head, char* street, int number){
     // Si el usuario escribe "c. ", lo transformamos a "Carrer "
     // strncasecmp compara sin importar mayúsculas las primeras N letras
     if(strncasecmp(street, "c. ", 3) == 0){
-            sprintf(search_name, "Carrer %s", street +3);
-        }else strcpy(search_name, street);
+        sprintf(search_name, "Carrer %s", street +3);
+    }else strcpy(search_name, street);
         
     // Lo que hace el strncasecmp es:
     // Comparara solo las 3 primeras letras, y no importa si son mayusculas o minusculas
