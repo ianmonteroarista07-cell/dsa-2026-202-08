@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include "house.h"
 
 
 
@@ -12,39 +13,55 @@ void createaleak() {
 }
 
 int main() {
-  
+
   char map_name[20];
   int origin_position;
-  char street_name[100];
-  int street_number;
 
-  printf("Introduzca el nombre del mapa (e.g. 'xs_2' o 'xl_1'): ");
-  scanf("%s", map_name);
+  // Para conseguir el nombre del mapa repetidas veces hasta que se introduzca uno correcto
+  get_map_name(map_name);
+  
+  // Carga de datos, leemos el archivo houses.txt y creamos la lista enlazada
+  // house_list guardará el puntero al primer vagón de nuestra lista. 
+  // Tambien dará el nombre de casas cargadas
+  House* house_list = load_houses(map_name);
 
+  // Contamos las lineas de los places y de streets de manera temporal
+  printf("%d places loaded\n", count_lines(map_name, "places.txt"));
+  printf("%d streets loaded\n", count_lines(map_name, "streets.txt"));
+
+  // MENU DEL USUARIO 
+  printf("\n\t--- PUNTO DE ORIGEN ---\n");
   printf("Donde estas? Address (1), Place (2) or Coordinate (3)?: ");
-  scanf("%d", &origin_position);
+
+  // Leemos la opcion, si no es un numero, el switch irá al default.
+  if(scanf("%d", &origin_position) != 1){
+    printf("[ERROR] Entrada no válida.\n");
+    free_houses(house_list); // Hay que liberar tambien
+    return 1;
+  }
 
   switch(origin_position){
-    case 1:
-      printf("Introduzca nombre de la calle (e.g. 'Carrer de Roc Boronat'): ");
-      scanf("%s", street_name);
-
-      printf("Introduzca numero de la calle (e.g. '138'): ");
-      scanf("%d", &street_number);
+    case 1:{
+      char street_name[100];
+      int num_street;
+      get_adress_name(street_name, &num_street);
+      if(num_street != -1){
+        find_house_coordinates(house_list, street_name, num_street);
+      }else{
+        printf("[ERROR] Numero invalido.\n");
+      }
       break;
+    }
     case 2:
-      printf("¡Aun no implementado!");
-      break;
     case 3:
-      printf("¡Aun no implementado!");
+      printf("¡Aun no implementado!\n");
       break;
     
+    default:
+      printf("Opcion Invalida.\n");
+      break;
   }
-  // how to import and call a function
-  printf("el megafaaaccctorial of 4 is %d\n", fact(4));
-
-  // uncomment and run "make v" to see how valgrind detects memory leaks
-  // createaleak();
-
+  // Recorremos toda la lista enlazada para liberar la memoria de cada nodo con free()
+  free_houses(house_list);
   return 0;
 }
