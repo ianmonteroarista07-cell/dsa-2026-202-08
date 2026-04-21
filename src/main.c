@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include "house.h"
-
+#include "place.h"
 
 
 void createaleak() {
@@ -26,7 +26,8 @@ int main() {
   House* house_list = load_houses(map_name);
 
   // Contamos las lineas de los places y de streets de manera temporal
-  printf("%d places loaded\n", count_lines(map_name, "places.txt"));
+  //printf("%d places loaded\n", count_lines(map_name, "places.txt"));
+  Place* place_list = load_places(map_name);
   printf("%d streets loaded\n", count_lines(map_name, "streets.txt"));
 
   // MENU DEL USUARIO 
@@ -37,6 +38,7 @@ int main() {
   if(scanf("%d", &origin_position) != 1){
     printf("[ERROR] Entrada no válida.\n");
     free_houses(house_list); // Hay que liberar tambien
+    free_places(place_list); 
     return 1;
   }
 
@@ -52,7 +54,16 @@ int main() {
       }
       break;
     }
-    case 2:
+    case 2: {
+    char place_name[100];
+      printf("Introduzca nombre del lugar (e.g. 'Sagrada Familia'): ");
+
+      scanf(" %99[^\n]", place_name); 
+      
+      // Llamamos a la función que busca e imprime las coordenadas
+      find_place_coordinates(place_list, place_name);
+      break;
+    }
     case 3:
       printf("¡Aun no implementado!\n");
       break;
@@ -63,5 +74,6 @@ int main() {
   }
   // Recorremos toda la lista enlazada para liberar la memoria de cada nodo con free()
   free_houses(house_list);
+  free_places(place_list);  
   return 0;
 }
