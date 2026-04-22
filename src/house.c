@@ -81,9 +81,15 @@ House* load_houses(char* map_name) {
         
         // Reservamos memoria para un nuevo nodo
         House* new_node = malloc(sizeof(House));
-        
+
         // Metemos los datos dentro del nodo
-        strcpy(new_node->street_name, line_street);
+
+        // Normalizamos Y guardamos a la vez. 
+        // Esta función lee de "line_street" y escribe el resultado en "new_node->street_name"
+        // En el caso de xs_1 pasamos de "C. Pompeu Fabra" -> "Carrer Pompeu Fabra" antes de guardar
+        normalize_street(new_node->street_name, line_street);
+
+        // Metemos el resto de datos numéricos
         new_node->house_number = line_num;
         new_node->lat = line_lat;
         new_node->lon = line_lon;
@@ -111,18 +117,7 @@ void find_house_coordinates(House* head, char* street, int number){
     int street_exist = 0;
     char search_name[100];
 
-    // Comparamos el caso cuando nos lo dan abreviado
-    // Si el usuario escribe "c. ", lo transformamos a "Carrer "
-    // strncasecmp compara sin importar mayúsculas las primeras N letras
-    if(strncasecmp(street, "c. ", 3) == 0){
-        sprintf(search_name, "Carrer %s", street +3);
-    }else strcpy(search_name, street);
-        
-    // Lo que hace el strncasecmp es:
-    // Comparara solo las 3 primeras letras, y no importa si son mayusculas o minusculas
-    // solo mira 'c' '.' ' '
-    // si son iguales da 0.
-    // ponemos un +3 para coger lo que haya despues de "c. " porque avanza 3 posiciones
+    normalize_street(search_name, street);
 
     // Buscar coincidencia exacta de calle y numero
     while(actual != NULL){
@@ -188,6 +183,40 @@ void free_houses(House* head){
         temp = head;        // Guardamos el nodo actual
         head = head->next;  // Saltamos al siguiente antes de borrar nada
         free(temp);         // Liberamos la memoria del nodo guardado
+    }
+}
+
+void normalize_street(char* street_arreglada, char* origin_street){
+    // Caso Carrer
+
+    // Comparamos el caso cuando nos lo dan abreviado
+    // Si el usuario escribe "c. ", lo transformamos a "Carrer "
+    // strncasecmp compara sin importar mayúsculas las primeras N letras
+
+ 
+    // Lo que hace el strncasecmp es:
+    // Comparara solo las 3 primeras letras, y no importa si son mayusculas o minusculas
+    // solo mira 'c' '.' ' '
+    // si son iguales da 0.
+    // ponemos un +3 para coger lo que haya despues de "c. " porque avanza 3 posiciones
+    if(strncasecmp(origin_street, "c. ", 3) == 0){
+        sprintf(street_arreglada, "Carrer %s", origin_street + 3);
+    }
+    // Caso Avinguda
+    else if(strncasecmp(origin_street, "av. ", 4) == 0){
+        sprintf(street_arreglada, "Avinguda %s", origin_street +4);
+    }
+    // Caso Passatge
+    else if(strncasecmp(origin_street, "Ptge. ", 6) == 0){
+        sprintf(street_arreglada, "Passatge %s", origin_street + 6);
+    }
+    // Caso Rambla
+    else if(strncasecmp(origin_street,"Rbla. ", 6) == 0){
+        sprintf(street_arreglada, "Rambla %s", origin_street + 6);
+    }
+    // Si no coincide con ninguna se devuelve la original
+    else{
+        strcpy(street_arreglada, origin_street);
     }
 }
 

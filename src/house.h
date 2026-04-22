@@ -31,5 +31,8 @@ void get_adress_name(char* street_final, int* num_final);
 // Libera toda la memoria dinamica (malloc) usada por la lista al terminar
 void free_houses(House* head);
 
+// Traduce abreviaturas (C., Av., Ptge., Rbla.) a nombres completos
+void normalize_street(char* destiny_street, char* original_street);
+
 int levenshtein_distance(const char *s1, const char *s2);
 #endif
