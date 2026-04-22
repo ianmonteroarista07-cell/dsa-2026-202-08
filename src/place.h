@@ -1,7 +1,7 @@
 #ifndef PLACE_H
 #define PLACE_H
 
-typedef struct Place {
+typedef struct Place{
     char name[100];
     char type[100]; 
     double lat;

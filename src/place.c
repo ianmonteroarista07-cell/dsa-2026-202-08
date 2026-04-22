@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,24 +18,19 @@ Place* load_places(char* map_name) {
     Place* head = NULL; // Puntero que siempre indicará el inicio de la lista
     
     // Variables temporales que guardan lo que se lee en cada línea
+    char useless_id[100];    // Para leer el primer codigo y descartarlo
     char line_name[100];
     char line_type[100];
     double line_lat, line_lon;
     int count = 0;
 
-    char header[200];
-    if (fgets(header, sizeof(header), f) == NULL) { // Si el archivo está vacío se sale
-        fclose(f);
-        return NULL; 
-    }
-    //Bucle para leer el archivo línea a línea.
-    //El espacio inicial ignora saltos de línea o espacios en blanco previos.
-    //%99[^,] lee hasta 99 caracteres, pero se detiene en cuanto ve una coma (,).
-    //Si fscanf logra leer las 4 variables correctamente, devuelve 4 y el bucle sigue.
-    while(fscanf(f, " %99[^,],%99[^,],%lf,%lf\n", line_name, line_type, &line_lat, &line_lon) == 4){
+    // Escaneo de 5 columnas: id, nombre, tipo, lat, lon
+    // Al poner 5 columnas, el fscanf podrá saltar de línea correctamente
+    while(fscanf(f, " %99[^,],%99[^,],%99[^,],%lf,%lf\n", useless_id, line_name, line_type, &line_lat, &line_lon) == 5){
         
         //Reservamos memoria dinámica en el Heap
         Place* new_node = malloc(sizeof(Place)); 
+        if(new_node == NULL) break; // Seguridad por si falla el malloc
         
         //Traspasamos los datos de las variables temporales a la estructura del nodo
         strcpy(new_node->name, line_name);
@@ -59,27 +55,29 @@ Place* load_places(char* map_name) {
 void find_place_coordinates(Place* head, char* place_name){
     //Creamos un puntero para recorrer la lista sin perder el inicio 
     Place* actual = head;
-    int found = 0; //Para saber si hemos tenido éxito en la búsqueda
 
+    printf("\n\tBuscando coincidencias para: '%s'...\n", place_name);
+    
     //Recorremos la lista nodo a nodo hasta llegar al final
     while(actual != NULL){
-        
-        // strcasecmp compara textos ignorando si son mayúsculas o minúsculas y devuelve 0 si ambas cadenas son exactamente iguales 
-        if(strcasecmp(place_name, actual->name) == 0){
-            printf("\n\tLugar '%s' encontrado en (%lf,%lf). Tipo: %s\n", 
-                   actual->name, actual->lat, actual->lon, actual->type);
-            found = 1; //Marcamos lo encontrado
+        // Buscamos si "place_name" está dentro del NOMBRE del lugar
+        char* in_name = strcasestr(actual->name, place_name);
+        // Buscamos si "place_name" está dentro del TIPO del lugar
+        char* in_type = strcasestr(actual->type, place_name);
+
+        // Si se encuentra en el nombre O en el tipo 
+        if(in_name != NULL || in_type != NULL){
+
+            printf("\n\tEncontrado en (%lf, %lf)\n", actual->lat, actual->lon);
+
+            printf("\t\t[%s] - %s\n", actual->type, actual->name);
             return;
         }
     
-        // Si no es lo buscado, avanzamos al siguiente nodo
+        // Pasamos al siguiente nodo de la lista
         actual = actual->next;
     }
-
-    // Si el bucle termina y found sigue siendo 0, el lugar no estaba en la lista
-    if(!found){
-        printf("\n\tLugar no encontrado.\n");
-    }
+    printf("\tLugar o tipo no encontrado.\n");
 }
 
 void free_places(Place* head){

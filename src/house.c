@@ -220,7 +220,7 @@ void normalize_street(char* street_arreglada, char* origin_street){
     }
 }
 
-int levenshtein_distance(const char *s1, const char *s2){
+int levenshtein_distance(char *s1, char *s2){
     int len1 = strlen(s1);
     int len2 = strlen(s2);
     

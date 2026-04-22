@@ -34,5 +34,5 @@ void free_houses(House* head);
 // Traduce abreviaturas (C., Av., Ptge., Rbla.) a nombres completos
 void normalize_street(char* destiny_street, char* original_street);
 
-int levenshtein_distance(const char *s1, const char *s2);
+int levenshtein_distance(char *s1, char *s2);
 #endif

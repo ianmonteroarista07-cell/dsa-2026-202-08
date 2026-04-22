@@ -6,12 +6,12 @@
 #include "house.h"
 #include "place.h"
 
-
+/*
 void createaleak() {
   char *foo = malloc(20 * sizeof(char));
   printf("Allocated leaking string: %s", foo);
 }
-
+*/
 int main() {
 
   char map_name[20];
@@ -20,14 +20,16 @@ int main() {
   // Para conseguir el nombre del mapa repetidas veces hasta que se introduzca uno correcto
   get_map_name(map_name);
   
-  // Carga de datos, leemos el archivo houses.txt y creamos la lista enlazada
+  // Carga de datos, leemos el archivo houses.txt y places.txt creamos la lista enlazada
   // house_list guardará el puntero al primer vagón de nuestra lista. 
   // Tambien dará el nombre de casas cargadas
   House* house_list = load_houses(map_name);
 
-  // Contamos las lineas de los places y de streets de manera temporal
-  //printf("%d places loaded\n", count_lines(map_name, "places.txt"));
+  // place_list guardará el puntero al primer vagón de nuestra lista. 
+  // Tambien dará el nombre de casas cargadas
   Place* place_list = load_places(map_name);
+
+  // Contamos las lineas de streets de manera temporal
   printf("%d streets loaded\n", count_lines(map_name, "streets.txt"));
 
   // MENU DEL USUARIO 
@@ -58,10 +60,10 @@ int main() {
     char place_name[100];
       printf("Introduzca nombre del lugar (e.g. 'Sagrada Familia'): ");
 
-      scanf(" %99[^\n]", place_name); 
-      
-      // Llamamos a la función que busca e imprime las coordenadas
-      find_place_coordinates(place_list, place_name);
+      if(scanf(" %99[^\n]", place_name) == 1){
+        // Llamamos a la función que busca e imprime las coordenadas
+        find_place_coordinates(place_list, place_name);
+      }
       break;
     }
     case 3:
