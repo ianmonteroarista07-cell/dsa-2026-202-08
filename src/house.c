@@ -47,7 +47,7 @@ int count_lines(char* map_name, char* file_name) {
     if(f == NULL) return 0;
 
     int count = 0;
-    char c;
+    int c;
     // Leemos caracter a caracter hasta el final del archivo (EOF)
     while((c = fgetc(f)) != EOF){
         if(c == '\n')count++;
