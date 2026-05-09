@@ -52,7 +52,12 @@ Place* load_places(char* map_name) {
     return head; 
 }
 
-void find_place_coordinates(Place* head, char* place_name){
+// void find_place_coordinates(Place* head, char* place_name);
+// Antes la función era void, porque solo printeaba la latitud y longitud de los lugares
+// Pero ahora va a retornar un tipo Place para guardarme ese nodo con informacion que utilizaré en otras funciones del lab 4.
+
+
+Place* find_place_coordinates(Place* head, char* place_name){
     //Creamos un puntero para recorrer la lista sin perder el inicio 
     Place* actual = head;
 
@@ -71,13 +76,14 @@ void find_place_coordinates(Place* head, char* place_name){
             printf("\n\tEncontrado en (%lf, %lf)\n", actual->lat, actual->lon);
 
             printf("\t\t[%s] - %s\n", actual->type, actual->name);
-            return;
+            return actual; //antes solo habia return;
         }
     
         // Pasamos al siguiente nodo de la lista
         actual = actual->next;
     }
     printf("\tLugar o tipo no encontrado.\n");
+    return NULL;
 }
 
 void free_places(Place* head){
@@ -86,7 +92,7 @@ void free_places(Place* head){
     while(head != NULL){
         //Guardamos el nodo actual en temp
         temp = head;        
-        //Avanzamos head al siguiente nodo antes de borrar el actual porque i se borra 'head' directamente se pierde la conexión al resto de la lista.
+        //Avanzamos head al siguiente nodo antes de borrar el actual porque si se borra 'head' directamente se pierde la conexión al resto de la lista.
         head = head->next;  
         free(temp);         
     }
