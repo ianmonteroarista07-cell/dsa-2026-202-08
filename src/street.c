@@ -63,56 +63,53 @@ Street* load_streets(char* map_name){
     long long id1, id2;
     double lat1, lat2, lon1, lon2, dist;
     char street_name[250];
+    char line[500]; // Buffer para leer la linea completa del archivo
 
     /* 
-       EL BUCLE PRINCIPAL:
-       Leemos los 7 datos numéricos que SIEMPRE estan: id1, lat1, lon1, id2, lat2, lon2 y dist.
-       Ponemos una coma al final del formato "%lf," para que el programa se coma la coma que 
-       separa el numero del nombre de la calle.
+       Usamos fgets para leer la linea entera. 
+       Esto evita que el programa se detenga si encuentra una coma 
+       inesperada dentro del nombre de una calle.
     */
 
-    // Antes tambien habia uno para el nombre de la calle, pero hay algunas lineas que no tienen nombre de calle
-    // antes habia street_name) == 8
+    while(fgets(line, sizeof(line), f)){
+        // sscanf extrae los datos del string "line" que acabamos de leer
+        // El formato %[^\n\r] lee todo el texto hasta el final de la línea
+        int res = sscanf(line, "%lld,%lf,%lf,%lld,%lf,%lf,%lf,%[^\n\r]", &id1, &lat1, &lon1, &id2, &lat2, &lon2, &dist, street_name);
+        // Si hemos leído al menos los 7 datos numéricos, la línea es válida
+        if(res >= 7){
+            // Creamos un nuevo nodo para nuestra lista
+            Street *new_node = malloc(sizeof(Street));
+            if (new_node == NULL) break;    // Seguridad por si falla el malloc
+            
+            // Guardamos los números que acabamos de leer en el nuevo nodo
+            new_node->id1 = id1;
+            new_node->p1.lat = lat1;
+            new_node->p1.lon = lon1;
+            new_node->id2 = id2;
+            new_node->p2.lat = lat2;
+            new_node->p2.lon = lon2;
+            new_node->length = dist;
 
-    while(fscanf(f, " %lld,%lf,%lf,%lld,%lf,%lf,%lf,", &id1, &lat1, &lon1, &id2, &lat2, &lon2, &dist) == 7){
-        // Creamos un nuevo nodo para nuestra lista
-        Street *new_node = malloc(sizeof(Street));  
-        if(new_node == NULL) break; // Seguridad por si falla el malloc
-
-        // Guardamos los números que acabamos de leer en el nuevo nodo
-        new_node->id1 = id1;
-        new_node->p1.lat = lat1;
-        new_node->p1.lon = lon1;
-        new_node->id2 = id2;
-        new_node->p2.lat = lat2;
-        new_node->p2.lon = lon2;
-        new_node->length = dist;
-        // strcpy(new_node->name, street_name); Antes habia esto,
-
-        // Ahora habrá esto porque, evaluamos ambos casos donde hay nombre de calle y donde no
-        /* 
-           LECTURA DEL NOMBRE:
-           Intentamos leer el nombre de la calle hasta el final de la linea (%[^\n\r]).
-           - Si fscanf devuelve 1: Significa que ha encontrado un nombre y lo guarda.
-           - Si NO devuelve 1: Significa que la linea se acabó despues de la ultima coma 
-             (como en la línea 205 del xl_1). En ese caso, le ponemos "Unknown Street".
-        */
-        if(fscanf(f, " %[^\n\r]", street_name) == 1){
-            strcpy(new_node->name, street_name);
-        }else{
-            strcpy(new_node->name, "Unknown Street");
+            // Si res es 8, significa que sscanf encontró un nombre
+            if(res == 8){
+                strcpy(new_node->name, street_name);
+            }else{
+                // Si res es 7, el nombre estaba vacío en el archivo
+                strcpy(new_node->name, "Unknown Street");
+            }
+            // Metemos el nuevo nodo al principio de la lista (como siempre)
+            new_node->next = head;
+            head = new_node;
+            count++;    // Contamos cada calle
         }
-        // Metemos el nuevo nodo al principio de la lista (como siempre)
-        new_node->next = head;
-        head = new_node;
-
-        count++;    // Contamos cada calle
     }
     // Cerramos el archivo y avisamos de cuantas calles hemos cargado
     fclose(f);
     printf("%d streets loaded\n", count);
     return head; // Devolvemos la lista completa
 }
+// He cambiado el load_streets porque antes solo leia 18849 de las 18944 que habian en streets.txt
+// Ahora carga todas las streets
 
 // Libera la memoria
 void free_streets(Street* head){
@@ -144,34 +141,83 @@ Street* get_closest_street(Street *head, Position userPos){
     }
     return closest;
 }
-// Muestra a quw calles puedes ir desde la calle actual
-void print_connected_streets(Street* head, Street* closest){
-    if(closest == NULL) return;
+// Muestra a que calles puedes ir desde la calle actual
+void print_connected_streets(Street* head, Street* start_segment){
+    if(start_segment == NULL) return;
 
-    printf("\tClosest street: %s\n", closest->name);
-    printf("\tBeetween %lld (%lf, %lf) and %lld (%lf, %lf)\n", closest->id1, closest->p1.lat, closest->p1.lon, closest->id2, closest->p2.lat, closest->p2.lon);
+    printf("\tClosest street: %s\n", start_segment->name);
+    printf("\tBeetween %lld (%lf, %lf) and %lld (%lf, %lf)\n", start_segment->id1, start_segment->p1.lat, start_segment->p1.lon, start_segment->id2, start_segment->p2.lat, start_segment->p2.lon);
     
     printf("\n\tFrom this street segment, you can go to:\n");
+    // 'current_seg' és el segment que estem analitzant en cada salt. 
+    // Comencem pel segment més proper (start_segment).
+    Street *current_seg = start_segment;
+    // 'found_next' actua com un senyal per saber si hem de seguir avançant per la mateixa carrer
+    int found_next = 1;
+    // Comptador per saber si hem trobat alguna connexió real al final de tot el camí
+    int total_connections = 0;
 
-    Street *current = head;
-
-    while(current != NULL){
-        // No comparamos el mismo segmento (es decir contigo mismo)
-        if(current != closest){
-            // El inicio de la siguiente es el final de la actual
-            if(current->id1 == closest->id2){
-                printf("DEBUG: He trobat un segment que comença al node %lld\n", current->id1);
-                // Evitamos el giro de 180 grados (volver por donde vinimos)
-                if(current->id2 != current->id1){ // strcmp(current->name, closest->name) != 0  no se que poner de estos dos (PREGUNTAR) // current->id2 != current->id1
-                    printf("\t- %s\n", closest->name);
+    while(found_next){
+        found_next = 0;
+        Street *p = head; // Puntero auxiliar para recorrer la lista desde el inicio
+        while(p != NULL){
+            // ¿Conecta el inicio de 'p' con el final de nuestro tramo actual?
+            // Condición de DIRECCIONALIDAD:
+            // Solo nos interesan los segmentos que COMIENCEN (id1) 
+            // donde ACABA el nuestro (current_seg->id2).
+            if(p->id1 == current_seg->id2){
+                // CASO A: Misma calle (Seguimos saltando)
+                /* 
+                TROBAR UN CARRER DIFERENT:
+                Hem de trobar un carrer diferenten el que estem.
+                Això ho fem comparant els noms amb strcmp.
+                */
+                if(strcmp(p->name, current_seg->name) == 0){
+                    /* 
+                    VIGILAR BUCLES (Carrers bidireccionals):
+                    No volem entrar en bucles llavors si el segment que hem trobat
+                    torna cap enrere (acaba on nosaltres hem començat), l'ignorem.
+                    */
+                    if(p->id2 != current_seg->id1){ // Evitamos volver atrás
+                        current_seg = p; 
+                        found_next = 1;  
+                        break; // Reiniciamos búsqueda desde el principio con el nuevo tramo
+                    }
+                }else{
+                // CASO B: Calle distinta (Cruce encontrado)
+                // Cada vez que encontramos una calle distinta, sumamos    
+                    total_connections++;
+                    printf("\t- %s\n", start_segment->name);
                     printf("\t\tWhich is connected to:\n");
-                    printf("\t\t\t- %s\n", current->name);
+                    printf("\t\t\t- %s\n", p->name);
+                    // No ponemos found_next = 1 para no seguir saltando más allá del cruce
                 }
             }
+            p = p->next;
         }
-        current = current->next;
+    }       
+    // Si después de todos los saltos el contador sigue en 0, avisamos
+    if(total_connections == 0){
+        printf("\t\t(No se han encontrado conexiones salientes o es un callejón sin salida)\n");
     }
 }
+/* * EXPLICACIÓN DE LA LÓGICA DE INTERSECCIONES:
+ * 1. El bucle externo (while found_next) permite "saltar" entre segmentos 
+ * que tienen el mismo nombre (la misma calle continúa).
+ * * 2. El bucle interno (while p != NULL) recorre TODA la lista de calles 
+ * para el nodo actual (current_seg->id2).
+ * * 3. ¿Por qué imprime más de una conexión? 
+ * Si en un cruce hay 3 calles diferentes (ej: Rambla y Ronda), el bucle 
+ * interno las encontrará todas a medida que avanza por la lista y las 
+ * imprimirá una a una. 
+ * * 4. ¿Por qué no usamos 'break' al encontrar una calle distinta?
+ * Si pusiéramos un 'break' tras el printf de una calle distinta, el 
+ * programa se detendría en la primera que encontrara y no veríamos 
+ * las demás opciones del cruce. Solo usamos 'break' cuando es la MISMA 
+ * CALLE (mismo nombre) para actualizar nuestra posición y volver a 
+ * empezar la búsqueda desde el nuevo final.
+ */
+
 // Formula de Haversine para calcular distancia en curva sobre la Tierra
 double haversine(Position posA, Position posB){
     double lat1 = toRadians(posA.lat);

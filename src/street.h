@@ -32,7 +32,7 @@ void free_streets(Street* head);
 Street* get_closest_street(Street *head, Position userPos);
 
 // Imprime por pantalla las calles a las que se puede girar desde la actual
-void print_connected_streets(Street* head, Street* closest);
+void print_connected_streets(Street* head, Street* start_segment);
 
 // Calcula la distancia real entre dos puntos teniendo en cuenta la curvatura de la Tierra (HAVERSINE)
 double haversine(Position posA, Position posB);
