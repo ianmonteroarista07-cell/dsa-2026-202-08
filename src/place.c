@@ -16,36 +16,52 @@ Place* load_places(char* map_name) {
     if(f == NULL) return NULL; //si el archivo no existe, salimos
 
     Place* head = NULL; // Puntero que siempre indicará el inicio de la lista
-    
-    // Variables temporales que guardan lo que se lee en cada línea
-    char useless_id[100];    // Para leer el primer codigo y descartarlo
-    char line_name[100];
-    char line_type[100];
-    double line_lat, line_lon;
+    char line[500];
     int count = 0;
 
-    // Escaneo de 5 columnas: id, nombre, tipo, lat, lon
-    // Al poner 5 columnas, el fscanf podrá saltar de línea correctamente
-    while(fscanf(f, " %99[^,],%99[^,],%99[^,],%lf,%lf\n", useless_id, line_name, line_type, &line_lat, &line_lon) == 5){
-        
-        //Reservamos memoria dinámica en el Heap
-        Place* new_node = malloc(sizeof(Place)); 
-        if(new_node == NULL) break; // Seguridad por si falla el malloc
-        
-        //Traspasamos los datos de las variables temporales a la estructura del nodo
-        strcpy(new_node->name, line_name);
-        strcpy(new_node->type, line_type);
-        new_node->lat = line_lat;
-        new_node->lon = line_lon;
-        
-        //Conectamos el nodo a la lista y hacemos que el 'next' de este nuevo nodo apunte al que antes era el primero
-        new_node->next = head;
-        //Se actualiza el head para que este nuevo nodo sea el inicio de la lista
-        head = new_node;
-        
-        count++;
-    }
+    // Aqui torna a passar el mateix problema que abans, on no es carregava els 'places' totals, ja que a la
+    // posició 6081 el 'line_type' te comes per dins llavors haurem de cambiar el fscanf per un fgets.
+    while(fgets(line, sizeof(line), f)){
+        // Variables temporales que guardan lo que se lee en cada línea
+        char useless_id[300];  
+        char line_name[300];
+        char line_type[300];
+        double line_lat, line_lon;
+        int res;
 
+        /* El ID y el Nombre nunca llevan comillas en este archivo, pero el TIPO sí.
+           Para saber si el tipo tiene comillas, usamos un truco con sscanf:
+           Intentamos leer primero asumiendo que el tipo SÍ lleva comillas.
+           Formato del tipo con comillas: \"%[^\"]\" (lee hasta la comilla de cierre).
+        */
+
+        res = sscanf(line, " %[^,],%[^,],\"%[^\"]\",%lf,%lf", useless_id, line_name, line_type, &line_lat, &line_lon);
+        
+        // Si no ha leído 5 campos, significa que el tipo NO tenía comillas (entonces ha fallado el formato)
+        if(res != 5){
+            // Volvemos a intentar con el formato normal separado solo por comas (%[^,])
+            res = sscanf(line, " %[^,],%[^,],%[^,],%lf,%lf", useless_id, line_name, line_type, &line_lat, &line_lon);
+        }
+        // Si cualquiera de las dos opciones ha sacado 5 correctamente, entonces:
+        if(res == 5){
+            //Reservamos memoria dinámica en el Heap
+            Place* new_node = malloc(sizeof(Place)); 
+            if(new_node == NULL) break; // Seguridad por si falla el malloc
+            
+            //Traspasamos los datos de las variables temporales a la estructura del nodo
+            strcpy(new_node->name, line_name);
+            strcpy(new_node->type, line_type);
+            new_node->lat = line_lat;
+            new_node->lon = line_lon;
+            
+            //Conectamos el nodo a la lista y hacemos que el 'next' de este nuevo nodo apunte al que antes era el primero
+            new_node->next = head;
+            //Se actualiza el head para que este nuevo nodo sea el inicio de la lista
+            head = new_node;
+            
+            count++;
+        }
+    }
     fclose(f);
     printf("%d places loaded\n", count); 
     

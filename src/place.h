@@ -2,8 +2,8 @@
 #define PLACE_H
 
 typedef struct Place{
-    char name[100];
-    char type[100]; 
+    char name[300];
+    char type[300]; 
     double lat;
     double lon;
     struct Place* next;

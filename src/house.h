@@ -6,7 +6,7 @@
    Cada nodo representa una casa con su direccion y coordenadas.
 */
 typedef struct House{
-    char street_name[100];  // Nombre de la calle
+    char street_name[300];  // Nombre de la calle
     int house_number;       // Numero de la casa
     double lat;             // Latitud
     double lon;             // Longitud
@@ -34,5 +34,4 @@ void free_houses(House* head);
 // Traduce abreviaturas (C., Av., Ptge., Rbla.) a nombres completos
 void normalize_street(char* destiny_street, char* original_street);
 
-int levenshtein_distance(char *s1, char *s2);
 #endif

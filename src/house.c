@@ -10,7 +10,7 @@
 void get_map_name(char* map_name){
 
     char *valido[] = {"2xl_1","lg_1","md_1","xl_1","xs_1","xs_2"};
-    printf("Introduzca el nombre del mapa (e.g. 'xs_2' o 'xl_1'): ");
+    printf("Introduzca el nombre del mapa ('2xl_1','xl_1','lg_1','md_1','xs_1','xs_2'): ");
     scanf("%s", map_name);
     int ok = 0;
 
@@ -69,38 +69,63 @@ House* load_houses(char* map_name) {
     if(f == NULL) return NULL;
 
     House* head = NULL; // El principio de la lista
-    char line_street[100];
-    int line_num;
-    double line_lat, line_lon;
+    char line[600];
     int count = 0; // Ponemos el contador aqui directamente, y no haria falta utilizar la otra funcion de count_lines
 
-    // Leemos el archivo linea a linea con el formato de (calle,numero,lat,lon)
-    // %99[^,] significa lee hasta 99 caracteres o hasta encontrar una coma
-    // Esto lo hacemos porque sino solo leeria la primera palabra y el resto nunca lo cogeria
-    while(fscanf(f, " %99[^,],%d,%lf,%lf\n", line_street, &line_num, &line_lat, &line_lon) == 4){
-        
-        // Reservamos memoria para un nuevo nodo
-        House* new_node = malloc(sizeof(House));
+    // fscanf es colapsa si troba un format inesperat (com una coma dins del nom).
+    // Es queda encallat en aquest punt del fitxer i trenca el bucle.
+    // fgets llegeix la linia SENCERA d'un sol cop fins al salt de linia (\n). 
+    // No importa què hi hagi dins (comilles, comes, ...). 
+    // Això garanteix que el fitxer AVANCI sempre i mai es quedi congelat.
+    while(fgets(line, sizeof(line), f)){
+        char line_street[300];
+        int line_num;
+        double line_lat, line_lon;
+        int res;
 
-        // Metemos los datos dentro del nodo
+        // Un cop tenim la línia segura a la memòria (gràcies a fgets), 
+        // mirem el seu primer caràcter per saber com hem d'extreure les dades.
+        if(line[0] == '"'){
+            // CAS A: COMENÇA AMB COMILLES DOBLES:
+            // Utilitzem sscanf - \"       -> Salta la comilla inicial del fitxer.
+            //                  - amb %[^\"] Guarda tot el text FINS a trobar la comilla de tancament
+            //                  - \"       -> Salta la comilla final per poder llegir els números darrere.
 
-        // Normalizamos Y guardamos a la vez. 
-        // Esta función lee de "line_street" y escribe el resultado en "new_node->street_name"
-        // En el caso de xs_1 pasamos de "C. Pompeu Fabra" -> "Carrer Pompeu Fabra" antes de guardar
-        normalize_street(new_node->street_name, line_street);
+            //sscanf llegeix les dades des d'un STRING o text que ja està en la memoria.
+            // En aquest cas, agafa la línia de text "line" que fgets acaba d'extreure, la trosseja 
+            // segons el format que li demanem, i guarda cada fragment en les seves variables.
+            // Retorna el nombre de variables que ha pogut omplir amb èxit (en aquest cas busquem 4)
+            res = sscanf(line, "\"%[^\"]\",%d,%lf,%lf", line_street, &line_num, &line_lat, &line_lon);
+        }else{
+            // CAS B: Linia normal sense comilles
+            // Utilitzem el format %[^,] -> "Llegeix el text fins a la primera coma"
+            res = sscanf(line, "%[^,], %d, %lf,%lf", line_street, &line_num, &line_lat, &line_lon);
+        }
+        // si sscanf ha pogut extreure els 4 elements de line correctament haurá donat 4
+        if(res == 4){
+            // Reservamos memoria para un nuevo nodo
+            House* new_node = malloc(sizeof(House));
+            if(new_node == NULL) break;
 
-        // Metemos el resto de datos numéricos
-        new_node->house_number = line_num;
-        new_node->lat = line_lat;
-        new_node->lon = line_lon;
+            // Metemos los datos dentro del nodo
+
+            // Normalizamos Y guardamos a la vez. 
+            // Esta función lee de "line_street" y escribe el resultado en "new_node->street_name"
+            // En el caso de xs_1 pasamos de "C. Pompeu Fabra" -> "Carrer Pompeu Fabra" antes de guardar
+            normalize_street(new_node->street_name, line_street);
+
+            // Metemos el resto de datos numéricos
+            new_node->house_number = line_num;
+            new_node->lat = line_lat;
+            new_node->lon = line_lon;
         
-        // Conectarlo al principio de la lista 
-        new_node->next = head;
-        head = new_node;
+            // Conectarlo al principio de la lista 
+            new_node->next = head;
+            head = new_node;
         
-        count++;
+            count++;
+        }
     }
-
     fclose(f);
     printf("%d houses loaded\n", count); 
     return head;
@@ -218,58 +243,4 @@ void normalize_street(char* street_arreglada, char* origin_street){
     else{
         strcpy(street_arreglada, origin_street);
     }
-}
-
-int levenshtein_distance(char *s1, char *s2){
-    int len1 = strlen(s1);
-    int len2 = strlen(s2);
-    
-    int matriz[len1+1][len2 +1];
-    for (int i = 0; i <= len1; i++){
-        matriz[i][0] = i;
-    }
-    for (int j = 0; j <= len2; j++){
-        matriz[0][j] = j;
-    }
-
-    for (int i = 1; i <= len1; i++){
-        for (int j = 1; j<= len2; j++){
-            char char1 = s1[i - 1];
-            char char2 = s2[j - 1];
-
-            if(char1 >= 'A' && char1 <= 'Z'){
-                char1 = char1 + 32;
-            }
-            if(char2 >= 'A' && char2 <= 'Z'){
-                char2 = char2 + 32;
-            }
-
-            int costo;
-            if (char1 == char2){
-                costo = 0;
-            } else{
-                costo = 1;
-            }
-
-            int elimina_costo = matriz[i - 1][j] + 1;
-            int inserta_costo = matriz[i][j - 1] + 1;
-            int sustituye_costo = matriz[i - 1][j - 1] + costo;
-            int costo_min;
-
-            if (elimina_costo < inserta_costo){
-                costo_min = elimina_costo;
-            } else {
-                costo_min = inserta_costo;
-            }
-
-            if (costo_min < sustituye_costo){
-                matriz[i][j] = costo_min;
-            } else {
-                matriz[i][j] = sustituye_costo;
-            }
-
-        }
-    }
-
-    return matriz[len1][len2];
 }

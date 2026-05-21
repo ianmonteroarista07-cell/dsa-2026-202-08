@@ -148,7 +148,6 @@ void print_connected_streets(Street* head, Street* start_segment){
     printf("\tClosest street: %s\n", start_segment->name);
     printf("\tBeetween %lld (%lf, %lf) and %lld (%lf, %lf)\n", start_segment->id1, start_segment->p1.lat, start_segment->p1.lon, start_segment->id2, start_segment->p2.lat, start_segment->p2.lon);
     
-    printf("\n\tFrom this street segment, you can go to:\n");
     // 'current_seg' és el segment que estem analitzant en cada salt. 
     // Comencem pel segment més proper (start_segment).
     Street *current_seg = start_segment;
@@ -156,6 +155,12 @@ void print_connected_streets(Street* head, Street* start_segment){
     int found_next = 1;
     // Comptador per saber si hem trobat alguna connexió real al final de tot el camí
     int total_connections = 0;
+    // Creamos un array para guardar hasta 50 nombres de calles diferentes en el cruce
+    char printed_streets[50][200];
+    int printed_count = 0;
+
+    //control de si hemos imprimido la cabecera
+    int cabecera_printed = 0;
 
     while(found_next){
         found_next = 0;
@@ -184,13 +189,34 @@ void print_connected_streets(Street* head, Street* start_segment){
                         break; // Reiniciamos búsqueda desde el principio con el nuevo tramo
                     }
                 }else{
-                // CASO B: Calle distinta (Cruce encontrado)
-                // Cada vez que encontramos una calle distinta, sumamos    
-                    total_connections++;
-                    printf("\t- %s\n", start_segment->name);
-                    printf("\t\tWhich is connected to:\n");
-                    printf("\t\t\t- %s\n", p->name);
-                    // No ponemos found_next = 1 para no seguir saltando más allá del cruce
+
+                    // CASO B: Calle distinta (Cruce encontrado)
+                    // COMPROBAR SI YA HEMOS IMPRESO ESTA CALLE
+                    int already_printed = 0;
+                    for(int i = 0; i < printed_count; i++){
+                        if(strcmp(p->name, printed_streets[i]) == 0){
+                            already_printed = 1; // Al cambiar a 1 significa que la calle ya esta repetida
+                            break; // Entonces no hace falta seguir buscando en la lista y salimos del for con un break
+                        }
+                    }
+                    // SI no hemos impreso la calle entonces: 
+                    if(already_printed == 0){
+                        strcpy(printed_streets[printed_count], p->name); // lo ponemos en la lista en la posicion primera
+                        printed_count++; // y movemos la 'i' de la lista para que apunte a la siguiente posicion
+                        
+                        // Ahora vamos a hacer que la cabecera solo la imprima una vez y no se repita
+                        if(cabecera_printed == 0){
+                            printf("\n\tFrom this street segment, you can go to:\n");
+                            printf("\t- %s\n", start_segment->name);
+                            printf("\t\tWhich is connected to:\n");
+                            cabecera_printed = 1; // Bloqueamos para que no vuelva a entrar aqui
+                            // hacemos esto para que no se repita mas veces la misma frase
+                        }
+                        // Imprimimos únicamente el nombre de la calle conectada
+                        printf("\t\t\t- %s\n", p->name);
+                        total_connections++;
+                        // No ponemos found_next = 1 para no seguir saltando más allá del cruce
+                    }
                 }
             }
             p = p->next;
