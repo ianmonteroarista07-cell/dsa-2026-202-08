@@ -135,7 +135,7 @@ House* load_houses(char* map_name) {
   Si la calle existe pero el numero no, muestra los numeros disponibles.
 */
 
-void find_house_coordinates(House* head, char* street, int number){
+House* find_house_coordinates(House* head, char* street, int number){
     // Creamos un puntero auxiliar "actual" que apunta al inicio de la lista (head).
     // Lo usamos para recorrer la lista nodo a nodo, permitiéndonos avanzar con "actual = actual->next".
     House* actual = head;
@@ -150,7 +150,9 @@ void find_house_coordinates(House* head, char* street, int number){
             street_exist = 1;   // Marcamos que la calle al menos existe
             if(actual->house_number == number){
                 printf("\n\tEncontrado en (%lf,%lf)\n", actual->lat, actual->lon);
-                return;     // Salimos al encontrarlo
+                // printf("\t\t\t\t\t%s, %d\n", actual->street_name, actual->house_number); // DEBUG
+                return actual;     // Salimos al encontrarlo
+                // Ademas de salir al encontrarlo devolvemos el nodo de la casa encontrada
             }
         }
         actual = actual->next;
@@ -178,6 +180,8 @@ void find_house_coordinates(House* head, char* street, int number){
     }else{
         printf("\n\tDireccion no encontrada.\n");
     }
+
+    return NULL; // Si no se encuentra nada devolvemos NULL
 
 }
 /*

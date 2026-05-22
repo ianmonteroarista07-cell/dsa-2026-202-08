@@ -13,8 +13,7 @@ void createaleak() {
   printf("Allocated leaking string: %s", foo);
 }
 */
-int main() {
-
+int main(){
   char map_name[20];
   int origin_position;
 
@@ -50,6 +49,15 @@ int main() {
     return 1;
   }
 
+  // VARIABLES PARA LOS 3 CASOS
+  /*  
+    Creem una única variable de posició per guardar l'origen final trobat. 
+    D'aquesta manera, sigui quina sigui l'opció que triï l'usuari (1, 2 o 3),
+    totes acabaran guardant la latitud i longitud aquí
+  */
+  Position pos_origen;
+  int listo_parabuscar = 0;
+
   switch(origin_position){
     // El usuario quiere buscar por dirección (Calle + Numero)
     case 1:{
@@ -60,7 +68,12 @@ int main() {
       // Si el numero es válido (distinto de -1)
       if(num_street != -1){
         // Buscamos las coordenadas (Lat, Lon) de esa casa especifica
-        find_house_coordinates(house_list, street_name, num_street);
+        House* h = find_house_coordinates(house_list, street_name, num_street);
+        if(h != NULL){
+          pos_origen.lat = h->lat;
+          pos_origen.lon = h->lon;
+          listo_parabuscar = 1; // Activem que hem trobat les coordenades
+        }
       }else{
         printf("[ERROR] Numero invalido.\n");
       }
@@ -80,33 +93,52 @@ int main() {
 
         // Si encontramos el lugar, extraemos su posición
         if(p != NULL){
-          Position pos;
-          pos.lat = p->lat;
-          pos.lon = p->lon;
-
-          // Buscamos cuál es el tramo de calle mas cercano a ese lugar
-          Street* closest = get_closest_street(street_list, pos);
-
-          // Si encontramos una calle cercana, mostramos sus conexiones
-          if(closest != NULL){
-            print_connected_streets(street_list, closest);
-          } else{
-              printf("\t[ERROR] No se han podido cargar calles o no hay ninguna cercana.\n");
-          }
-
+          pos_origen.lat = p->lat;
+          pos_origen.lon = p->lon;
+          listo_parabuscar = 1;
         }
       }
       break;
     }
     // Coordenadas manuales (Latitud / Longitud)
     case 3:
-      printf("¡Aun no implementado!\n");
+      printf("Introduzca Latitud (e.g. 41.384532): ");
+      if(scanf("%lf", &pos_origen.lat) != 1){
+        printf("[ERROR] Latitud Inválida.\n");
+        break;
+      }
+      printf("Introduzca Longitud (e.g. 2.170421): ");
+      if(scanf("%lf", &pos_origen.lon) != 1){
+        printf("[ERROR] Longitud Inválida.\n");
+        break;
+      }
+      /* En aquest cas no hem de buscar a cap llista. Les dades que ha escrit 
+      l'usuari ja són les coordenades directes, així que activem la bandera. */
+      listo_parabuscar = 1; 
       break;
 
     // Si el usuario introduce un número que no es 1, 2 o 3
     default:
       printf("Opcion Invalida.\n");
       break;
+  }
+
+  // ESTE ES EL BLOQUE FINAL COMÚN
+
+  // si listo_parabuscar es 1, significa que cualquiera de los 3 casos de arriba ha guardado las coordenadas
+  // con éxito en pos_origen, ara ejecutamos el calculo del mapa
+
+  if(listo_parabuscar){
+    
+    // Buscamos cuál es el tramo de calle mas cercano a nuestro 'pos_origen'
+    Street* closest = get_closest_street(street_list, pos_origen);
+
+    // Si encontramos una calle cercana, mostramos sus conexiones
+    if(closest != NULL){
+      print_connected_streets(street_list, closest);
+    }else{
+      printf("\t[ERROR] No se han podido cargar calles o no hay ninguna cercana.\n");
+    }
   }
   // Recorremos toda la lista enlazada para liberar la memoria de cada nodo con free()
   free_houses(house_list);

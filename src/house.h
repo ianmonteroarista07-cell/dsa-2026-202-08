@@ -22,7 +22,7 @@ int count_lines(char* map_name, char* file_name);
 House* load_houses(char* map_name); //Tambien es el contador de houses
 
 // Busca una calle y numero específicos en la lista y muestra sus coordenadas
-void find_house_coordinates(House* head, char* street, int number);
+House* find_house_coordinates(House* head, char* street, int number);
 
 // Pide al usuario por teclado el nombre de una calle y un número
 // street_final y num_final son punteros para que los datos vayan hacia el main
