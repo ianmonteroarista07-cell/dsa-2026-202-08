@@ -6,13 +6,8 @@
 #include "house.h"
 #include "place.h"
 #include "street.h"
+#include "hashmap.h"
 
-/*
-void createaleak() {
-  char *foo = malloc(20 * sizeof(char));
-  printf("Allocated leaking string: %s", foo);
-}
-*/
 int main(){
   char map_name[20];
   int origin_position;
@@ -33,6 +28,21 @@ int main(){
   // Tambien dará el nombre de streets cargadas
   Street* street_list = load_streets(map_name);
 
+  // Declaramos la estructura de la tabla
+  HashTable* street_table = malloc(sizeof(HashTable));
+  if(street_table == NULL){
+    printf("[ERROR] No hay memoria para la HashTable.\n");
+    free_houses(house_list);
+    free_places(place_list);
+    free_streets(street_list);
+    return 1;
+  }
+
+  // Configuramos el tamaño ideal de cajones buscando el nombre del mapa
+  init_table(street_table, map_name);
+
+  // Recorremos la lista de streets y las clasificamos todas dentro de los cajones
+  full_table(street_table, street_list);
   // Contamos las lineas de streets de manera temporal
   //printf("%d streets loaded\n", count_lines(map_name, "streets.txt"));
 
@@ -46,6 +56,7 @@ int main(){
     free_houses(house_list); // Hay que liberar tambien
     free_places(place_list); 
     free_streets(street_list);
+    free_table(street_table); // <-- [LAB 5] Liberamos también aquí si el usuario se equivoca
     return 1;
   }
 
@@ -135,7 +146,13 @@ int main(){
 
     // Si encontramos una calle cercana, mostramos sus conexiones
     if(closest != NULL){
+      // [VERSION LAB 4] - Búsqueda lineal lenta
+      printf("\n--- [LAB 4] BUSCANDO CONEXIONES LINEALES (LENTO) ---\n");
       print_connected_streets(street_list, closest);
+
+      // [VERSION LAB 5] - Búsqueda rápida
+      printf("\n--- [LAB 5] BUSCANDO CONEXIONES CON HASHTABLE (RÁPIDO) ---\n");
+      print_connected_streets_hash(street_table, closest);
     }else{
       printf("\t[ERROR] No se han podido cargar calles o no hay ninguna cercana.\n");
     }
@@ -144,5 +161,8 @@ int main(){
   free_houses(house_list);
   free_places(place_list);  
   free_streets(street_list);
+
+  free_table(street_table); // Vaciamos las listas y el array de buckets por dentro
+  free(street_table);       // Borramos la propia HashTable de la memoria
   return 0;
 }

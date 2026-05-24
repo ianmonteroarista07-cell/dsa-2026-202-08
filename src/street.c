@@ -202,7 +202,8 @@ void print_connected_streets(Street* head, Street* start_segment){
                     // SI no hemos impreso la calle entonces: 
                     if(already_printed == 0){
                         strcpy(printed_streets[printed_count], p->name); // lo ponemos en la lista en la posicion primera
-                        printed_count++; // y movemos la 'i' de la lista para que apunte a la siguiente posicion
+                        printed_count++; // Hacemos que el tamaño de la lista sea mas grande añadiendo +1, entonces al recorrer el for de antes llegará más lejos
+                                        // Y tambien movemos la 'i' en la lista printed_streets
                         
                         // Ahora vamos a hacer que la cabecera solo la imprima una vez y no se repita
                         if(cabecera_printed == 0){
@@ -243,6 +244,25 @@ void print_connected_streets(Street* head, Street* start_segment){
  * CALLE (mismo nombre) para actualizar nuestra posición y volver a 
  * empezar la búsqueda desde el nuevo final.
  */
+
+ /*
+ * NOTA SOBRE EL ERROR DEL LAB 4:
+ * * Este Lab 4 no llega a imprimir algunas calles conectadas (como 'Carrer de Pallars'
+ * cuando venimos por 'Carrer de la Marina') por culpa de cómo manejamos el bucle.
+ * * Al cargar el mapa, los segmentos se meten en la lista enlazada por la cabeza, así que
+ * el orden se invierte respecto al archivo de texto. Esto hace que otro tramo del 
+ * Carrer de la Marina (la continuación) quede en la memoria colocado JUSTO DELANTE 
+ * de la calle que cruza (Pallars).
+ * * Como el bucle recorre la lista, el programa se encuentra primero con ese otro tramo 
+ * de la Marina. Al entrar en el Caso A, el algoritmo actualiza la posición actual y salta 
+ * el 'break'. El problema es que ese 'break' rompe el bucle de golpe y el puntero 'p' 
+ * nunca llega a hacer el 'p = p->next'. Al salirse de la lista antes de tiempo, todas 
+ * las calles que venían detrás en la memoria (como Pallars) se quedan sin leer y nunca 
+ * se imprimen.
+ * * En el Lab 5 con la HashTable esto ya no pasa, porque al quitar el 'break' nos obligamos 
+ * a leer el contenido completo del bucket antes de cambiar de calle.
+ */
+
 
 // Formula de Haversine para calcular distancia en curva sobre la Tierra
 double haversine(Position posA, Position posB){
