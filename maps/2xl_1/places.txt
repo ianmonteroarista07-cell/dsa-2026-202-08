@@ -13046,7 +13046,7 @@ a64b9059-a70a-4367-bf71-9d66afd3897c,Cellnex Telecom,office:telecommunication,41
 eabc8cdb-4103-4952-b83d-28a10b623886,La Coma,amenity:restaurant,41.3401472,2.1265697
 6e61b061-73d2-4d7d-83fb-044c2cb1e375,Cellnex Telecom,office:telecommunication,41.3412074,2.1278483
 6d5a6298-7e7a-4bc6-9de5-725f8b609808,la Zona,amenity:restaurant,41.3460291,2.1439158
-24f41e81-2a84-495e-ab4a-c80f2a609d06,Universitat Pompeu Fabra–Campus del Poblenou,amenity:university,41.4043275,2.1937054
+24f41e81-2a84-495e-ab4a-c80f2a609d06,Universitat Pompeu Fabra Campus del Poblenou,amenity:university,41.4043275,2.1937054
 66a61454-0ba2-4157-a23a-31aa63bddfd4,McDonald's,amenity:fast_food,41.3920984,2.1445773
 5f4c375c-9c71-42f4-91e7-bd78460ba2ae,Basar Moda,shop:variety_store,41.4093188,2.1738787
 c0f9d52e-b977-43c3-98e7-d20f376be139,Estrella de Istanbul,amenity:restaurant,41.4098375,2.1751296

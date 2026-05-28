@@ -109,7 +109,7 @@ void print_connected_streets_hash(HashTable* table, Street* start_segment){
 
         // Guardaremos temporalmente el siguiente tramo recto si lo encontramos,
         // pero NO saltaremos a él hasta haber revisado TODO el cajón actual.
-        Street* next_recto_seg = NULL; //MODIFICADO // TEMPORAL 
+        Street* next_recto_seg = NULL; //MODIFICADO // TEMPORAL //ya no es temporal
 
         // En vez de buscar en toda la lista de calles desde 'head', 50.000 calles,
         // calculamos directos al indice del cajon exacto de la esquina final actual (current_seg->id2)
@@ -123,8 +123,8 @@ void print_connected_streets_hash(HashTable* table, Street* start_segment){
             
             Street* street_in_bucket = p->segment;
             // PRINTF DE DEPURACIÓN (Muestra qué calle está mirando la HashTable en la RAM)
-            printf("[DEBUG] Buscando en Bucket: Mirando '%s' (id1: %lld -> id2: %lld)\n", //para hacer debug
-                   street_in_bucket->name, street_in_bucket->id1, street_in_bucket->id2);
+            //printf("[DEBUG] Buscando en Bucket: Mirando '%s' (id1: %lld -> id2: %lld)\n", //para hacer debug
+            //       street_in_bucket->name, street_in_bucket->id1, street_in_bucket->id2);
 
             // Verificamos si realmente conecta con nuestra esquina
             // El inicio (id1) de la nueva calle analizada 
@@ -135,11 +135,11 @@ void print_connected_streets_hash(HashTable* table, Street* start_segment){
                 // CASO A: Es la misma calle (saltamos por ella)
                 if(strcmp(street_in_bucket->name, current_seg->name) == 0){
                     if(street_in_bucket->id2 != current_seg->id1){ // Evitamos bucles hacia atrás
-                        //current_seg = street_in_bucket; MODIFICADO //TEMPORAL
+                        //current_seg = street_in_bucket; MODIFICADO //TEMPORAL //ya no es temporal
                         next_recto_seg = street_in_bucket; // Guardamos el tramo para el próximo salto 
                         found_next = 1;  
                         //break; // Reiniciamos el bucle while(found_next) con el nuevo segmento
-                        // ¡YA NO HAY BREAK! Seguimos revisando el resto del cajón MODIFICADO
+                        // ¡YA NO HAY BREAK! Seguimos revisando el resto del cajón MODIFICADO //ya no es temporal
 
                     }
                 // CASO B: Es una calle diferente (un cruce)

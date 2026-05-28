@@ -37,4 +37,5 @@ void print_connected_streets(Street* head, Street* start_segment);
 // Calcula la distancia real entre dos puntos teniendo en cuenta la curvatura de la Tierra (HAVERSINE)
 double haversine(Position posA, Position posB);
 
+double toRadians(double grados);
 #endif
