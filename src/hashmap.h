@@ -4,13 +4,13 @@
 
 
 typedef struct HashNode{
-    Street* segment;
-    struct HashNode* next;
+    Street* segment;        // Puntero al segmento de calle 
+    struct HashNode* next;  // Puntero al siguiente nodo (por si hay un choque en el mismo cajón)
 } HashNode;
 
 typedef struct{
-    HashNode** buckets;
-    int size;
+    HashNode** buckets;    // Array dinámico de punteros a HashNode (es decir, la lista de cajones).
+    int size;              // Tamaño total de la tabla (varía según el mapa)
 } HashTable;
 
 // Configura el tamaño según el mapa, hace el malloc del array interno y lo pone a NULL

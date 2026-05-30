@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <time.h>
 #include "house.h"
 #include "place.h"
 #include "street.h"
@@ -56,7 +57,7 @@ int main(){
     free_houses(house_list); // Hay que liberar tambien
     free_places(place_list); 
     free_streets(street_list);
-    free_table(street_table); // <-- [LAB 5] Liberamos también aquí si el usuario se equivoca
+    free_table(street_table); 
     free(street_table);
     return 1;
   }
@@ -67,7 +68,7 @@ int main(){
       free_houses(house_list); // Hay que liberar tambien
       free_places(place_list); 
       free_streets(street_list);
-      free_table(street_table); // <-- [LAB 5] Liberamos también aquí si el usuario se equivoca
+      free_table(street_table);
       free(street_table);
       return 1;
     }
@@ -159,12 +160,13 @@ int main(){
 
     // Si encontramos una calle cercana, mostramos sus conexiones
     if(closest != NULL){
+      /*
       // [VERSION LAB 4] - Búsqueda lineal lenta
       printf("\n--- [LAB 4] BUSCANDO CONEXIONES LINEALES (LENTO) ---\n");
-      print_connected_streets(street_list, closest);
+      print_connected_streets(street_list, closest);*/
 
       // [VERSION LAB 5] - Búsqueda rápida
-      printf("\n--- [LAB 5] BUSCANDO CONEXIONES CON HASHTABLE (RÁPIDO) ---\n");
+      // printf("\n--- [LAB 5] BUSCANDO CONEXIONES CON HASHTABLE (RÁPIDO) ---\n");
       print_connected_streets_hash(street_table, closest);
     }else{
       printf("\t[ERROR] No se han podido cargar calles o no hay ninguna cercana.\n");

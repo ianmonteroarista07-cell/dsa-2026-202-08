@@ -80,7 +80,7 @@ void full_table(HashTable* table, Street* street_list){
         count++;
         current = current->next;
     }
-    printf("%d streets han sido indexadas dentro de Hashtable (%d buckets)\n", count, table->size);
+    // printf("%d streets han sido indexadas dentro de Hashtable (%d buckets)\n", count, table->size);
 }
 /**
  * Algoritmo del Lab 5 optimizado con HashTable para buscar conexiones de vías.
