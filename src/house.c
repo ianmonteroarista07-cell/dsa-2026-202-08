@@ -248,3 +248,5 @@ void normalize_street(char* street_arreglada, char* origin_street){
         strcpy(street_arreglada, origin_street);
     }
 }
+
+//prueba
